@@ -2,3 +2,5 @@ openai
 python-dotenv
 faiss-cpu
 numpy
+fastapi
+uvicorn
