@@ -1,6 +1,6 @@
 # Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG** and **Graph RAG** using the Bridgerton "Lady in Silver" mystery — now upgraded to use **OpenAI APIs (Embeddings + LLM)** with secure `.env` configuration.
+Minimal comparison of **Traditional RAG** and **Graph RAG** using the Bridgerton "Lady in Silver" mystery — now upgraded to use **OpenAI APIs (Embeddings + LLM)** and exposed via a **FastAPI service**.
 
 ---
 
@@ -34,6 +34,7 @@ Both systems use the same facts but different representations:
 * **Embeddings**: OpenAI (`text-embedding-3-small`)
 * **Vector Search**: FAISS
 * **Graph Storage**: JSON
+* **API Layer**: FastAPI
 * **Environment**: uv / venv
 * **Config Management**: python-dotenv (.env)
 
@@ -76,18 +77,57 @@ uv sync
 
 ## ▶️ Run
 
-From project root:
-
-### **Traditional RAG**
+### **Run Scripts (Standalone)**
 
 ```bash
 python traditional_rag/rag.py
+python graph_rag/graph_rag.py
 ```
 
-### **Graph RAG**
+---
+
+### **Run FastAPI Service**
 
 ```bash
-python graph_rag/graph_rag.py
+uvicorn api.main:app --reload
+```
+
+---
+
+## 🔌 API Endpoints
+
+### ✅ Health Check
+
+```
+GET /health
+```
+
+---
+
+### 🔹 Traditional RAG
+
+```
+POST /traditional-rag
+```
+
+```json
+{
+  "query": "Who is the Lady in Silver?"
+}
+```
+
+---
+
+### 🔹 Graph RAG
+
+```
+POST /graph-rag
+```
+
+```json
+{
+  "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
+}
 ```
 
 ---
@@ -122,16 +162,17 @@ Graph RAG makes these connections explicit and easier for the LLM to reason over
 * ✅ Added **secure API key management using .env**
 * ✅ Upgraded to **production-grade embeddings (text-embedding-3-small)**
 * ✅ Improved reasoning using **gpt-4.1-mini**
-* ✅ Cleaner, scalable architecture (ready for FastAPI / Docker)
+* ✅ Added **FastAPI RAG service layer**
+* ✅ Clean, scalable architecture (API-ready)
 
 ---
 
 ## 🚀 Next Steps (Optional Enhancements)
 
-* Convert into **FastAPI RAG service**
 * Persist FAISS index (avoid recomputation)
 * Build **Hybrid RAG (Graph + Vector)**
 * Add **Docker + CI/CD pipeline**
+* Add caching (Redis) and async processing
 
 ---
 
@@ -141,4 +182,7 @@ This project demonstrates how:
 
 * Traditional RAG is great for **semantic retrieval**
 * Graph RAG excels at **relationship-aware reasoning**
-* Combining both leads to **real-world production AI systems**
+* FastAPI enables **production-ready AI services**
+* Combining both leads to **real-world AI backend systems**
+
+---
