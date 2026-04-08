@@ -1,0 +1,20 @@
+{
+  "nodes": [
+    {"id": "Benedict Bridgerton", "type": "Person"},
+    {"id": "Lady in Silver", "type": "Alias"},
+    {"id": "Sophie Baek", "type": "Person", "role": "Maid"},
+    {"id": "Silver Glove", "type": "Object", "crest": "Penwood"},
+    {"id": "Lady Araminta", "type": "Person", "role": "Stepmother"},
+    {"id": "Lord Penwood", "type": "Person", "status": "Deceased"},
+    {"id": "Posy Li", "type": "Person", "role": "Stepsister"}
+  ],
+  "edges": [
+    {"source": "Benedict Bridgerton", "target": "Lady in Silver", "relation": "IN_LOVE_WITH"},
+    {"source": "Lady in Silver", "target": "Silver Glove", "relation": "LEFT_BEHIND"},
+    {"source": "Sophie Baek", "target": "Lady in Silver", "relation": "IS_IDENTITY"},
+    {"source": "Silver Glove", "target": "Lord Penwood", "relation": "BELONGS_TO_FAMILY_OF"},
+    {"source": "Sophie Baek", "target": "Lord Penwood", "relation": "ILLEGITIMATE_DAUGHTER_OF"},
+    {"source": "Lady Araminta", "target": "Sophie Baek", "relation": "EMPLOYS_AND_HIDES"},
+    {"source": "Posy Li", "target": "Sophie Baek", "relation": "ALLIED_WITH"}
+  ]
+}
