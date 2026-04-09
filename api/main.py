@@ -169,3 +169,92 @@ def graph_rag(request:QueryRequest):
         "relationships":list(unique_edges),
         "answer":answer
     }
+
+# ------ Hybrid search RAG Endpoint------
+@app.post("/hybrid-rag")
+def hybrid_rag(request:QueryRequest):
+    query= request.query
+
+    # ---- Vector RAG (FAISS) ---
+    q_emb = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=[query]
+    )
+    q_emb = np.array([q_emb.data[0].embedding],dtype="float32")
+    _,indices = index.search(q_emb,3)
+    retrieved_chunks = [chunks[i]for i in indices[0]]
+
+    vector_context= "\n\n".join(retrieved_chunks)
+
+    # ----- GRAPH RAG -----
+    extracted_entities = [
+        node["id"]
+        for node in graph["nodes"]
+        if node["id"].lower() in query.lower()
+    ]
+    valid_edges = [
+        e for e in graph["edges"]
+        if isinstance(e,dict)
+        and "source" in e
+        and "target" in e
+        and "relation" in e
+    ]
+    relevant_edges = [
+        e for e in valid_edges
+        if e["source"] in extracted_entities or e["target"] in extracted_entities
+    ]
+
+    connected_entities= set()
+    for edge in relevant_edges:
+        connected_entities.add(edge["source"])
+        connected_entities.add(edge["target"])
+
+    expanded_edges=[
+        e for e in valid_edges 
+        if e["source"] in connected_entities or e["target"] in connected_entities 
+    ]
+    unique_edges = {
+        f"{e['source']}-{e['relation']}-e{['target']}":e
+        for e in expanded_edges
+    }.values()
+
+    graph_context = "Graph Relationships:\n"
+    for edge in unique_edges:
+        graph_context +=f"-{edge['source']} {edge['relation']} {edge['target']}\n"
+
+    # ---- MERGED CONTEXT -----
+    final_context=f"""
+    Vector Context:
+    {vector_context}
+
+    Graph Context:
+    {graph_context}
+"""
+    # ----- LLM -----
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input = [
+            {
+                "role":"system",
+                "content": """ Answer using BOTH:
+                1. Vector context (text evidence)
+                2. Graph relationships (connections)
+
+                Prefer graph relationships for reasoning.
+            """
+            },
+            {
+                "role":"user",
+                "content":f"Context:\n{final_context}\n\nQuestion: {query}"
+            }
+        ],
+        temperature=0
+    )
+    answer = response.output[0].content[0].text
+
+    return {
+        "query": query,
+        "vector_chunks": retrieved_chunks,
+        "graph_relationships": list(unique_edges),
+        "answer": answer
+    }
