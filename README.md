@@ -1,6 +1,6 @@
 # Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG** and **Graph RAG** using the Bridgerton "Lady in Silver" mystery — now upgraded to use **OpenAI APIs (Embeddings + LLM)** and exposed via a **FastAPI service**.
+Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**.
 
 ---
 
@@ -12,7 +12,7 @@ Who is the Lady in Silver and how is she connected to Lord Penwood?
 
 ## 🎯 Purpose
 
-Both systems use the same facts but different representations:
+All systems use the same facts but different representations:
 
 ### **Traditional RAG**
 
@@ -25,6 +25,12 @@ Both systems use the same facts but different representations:
 * Stores entities and relationships
 * Retrieves using graph traversal (multi-hop reasoning)
 * Uses **OpenAI LLM for reasoning**
+
+### **Hybrid RAG (NEW)**
+
+* Combines **vector search + graph relationships**
+* Uses text for context and graph for reasoning
+* Provides **more accurate and explainable answers**
 
 ---
 
@@ -132,11 +138,25 @@ POST /graph-rag
 
 ---
 
+### 🔹 Hybrid RAG (NEW 🚀)
+
+```
+POST /hybrid-rag
+```
+
+```json
+{
+  "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
+}
+```
+
+---
+
 ## 🧠 Key Insight
 
-Traditional RAG retrieves **similar text chunks**.
-
-Graph RAG retrieves **structured relationships and enables multi-hop reasoning**.
+* Traditional RAG retrieves **similar text chunks**
+* Graph RAG retrieves **structured relationships (multi-hop reasoning)**
+* Hybrid RAG combines both for **better accuracy and reasoning**
 
 For this mystery, correct reasoning requires connecting entities:
 
@@ -145,7 +165,7 @@ Sophie Baek → Lady in Silver
 Sophie Baek → Lord Penwood
 ```
 
-Graph RAG makes these connections explicit and easier for the LLM to reason over.
+Graph relationships provide the reasoning path, while vector search provides supporting context.
 
 ---
 
@@ -163,6 +183,7 @@ Graph RAG makes these connections explicit and easier for the LLM to reason over
 * ✅ Upgraded to **production-grade embeddings (text-embedding-3-small)**
 * ✅ Improved reasoning using **gpt-4.1-mini**
 * ✅ Added **FastAPI RAG service layer**
+* ✅ Introduced **Hybrid RAG (Graph + Vector)**
 * ✅ Clean, scalable architecture (API-ready)
 
 ---
@@ -170,9 +191,10 @@ Graph RAG makes these connections explicit and easier for the LLM to reason over
 ## 🚀 Next Steps (Optional Enhancements)
 
 * Persist FAISS index (avoid recomputation)
-* Build **Hybrid RAG (Graph + Vector)**
+* Add **Redis caching**
+* Implement **async endpoints**
 * Add **Docker + CI/CD pipeline**
-* Add caching (Redis) and async processing
+* Improve entity extraction (NER / LLM-based)
 
 ---
 
@@ -182,7 +204,8 @@ This project demonstrates how:
 
 * Traditional RAG is great for **semantic retrieval**
 * Graph RAG excels at **relationship-aware reasoning**
+* Hybrid RAG delivers **best of both worlds**
 * FastAPI enables **production-ready AI services**
-* Combining both leads to **real-world AI backend systems**
 
 ---
+
