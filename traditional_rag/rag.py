@@ -13,70 +13,56 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-file_path = os.path.join(BASE_DIR, "data", "documents.txt")
+INDEX_PATH = "data/faiss.index"
+EMBEDDINGS_PATH =  "data/embeddings.npy"
+DOC_PATH = "data/documents.txt"
 
 # 2. Load documents
-with open(file_path, "r") as f:
-    text = f.read()
-
-# Split by single newline (since each document is one line)
-chunks = [line.strip() for line in text.split("\n") if line.strip()]
-
+def load_documents():
+    with open(DOC_PATH,"r") as f:
+        return [line.strip() for line in f.readlines() if line.strip()]
 
 # 3. Create Embeddings using OpenAI
-embedding_response = client.embeddings.create(
-    model="text-embedding-3-small",
-    input=chunks
-)
+def create_embeddings(chunks):
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=chunks
+    )
+    return np.array([e.embedding for e in response.data]).astype("float32")
 
-embeddings = [item.embedding for item in embedding_response.data]
-embeddings= np.array(embeddings,dtype="float32")
 
 # 4. Stored in FAISS
-index = faiss.IndexFlatL2(embeddings.shape[1])
-index.add(embeddings)
+def build_and_save_index(chunks):
+    print("Creating embeddings and FAISS index ....")
 
-# 5. Query
-query = "Who was the Lady in Silver and how is she connected to the Penwood family?"
+    embeddings = create_embeddings(chunks)
+    dim = embeddings.shape[1]
+    index = faiss.IndexFlatL2(dim)
+    index.add(embeddings)
 
-query_embedding_response = client.embeddings.create(
-    model= "text-embedding-3-small",
-    input=[query]
-)
+    # Save
+    faiss.write_index(index,INDEX_PATH)
+    np.save(EMBEDDINGS_PATH,embeddings)
 
-q_emb = np.array([query_embedding_response.data[0].embedding],dtype="float32")
+    print("Index and embeddings saved")
 
-# 6. Retrieve Top-3
-_, indices = index.search(q_emb, 3)
-retrieved_chunks = [chunks[i] for i in indices[0]]
-retrieved = "\n\n".join(retrieved_chunks)
+    return index,embeddings
 
-# 7. Generate with OpenAI 
-response = client.responses.create(
-    model="gpt-4.1-mini",
-    input=[
-        {
-            "role":"system",
-            "content":"Answer strictly based on the provided context."
 
-        },
-        {
-            "role" : "user",
-            "content": f"Context:\n{retrieved}\n\nQuestion: {query}"
-        }
-    ],
-    temperature=0
-)
+def load_index():
+    if os.path.exists(INDEX_PATH) and os.path.exists(EMBEDDINGS_PATH) :
+        print("Loading FAISS index from disk.....")
+        index = faiss.read_index(INDEX_PATH)
+        embeddings = np.load(EMBEDDINGS_PATH)
+        return index,embeddings
 
-answer = response.output[0].content[0].text
+    return None,None
 
-# 8. Output
-print("=== TRADITIONAL RAG(OPENAI Embeddings) ===")
+def get_or_create_index():
+    chunks = load_documents()
+    index,embeddings = load_index()
 
-print("\nRetrieved chunks:")
-for chunk in retrieved_chunks:
-    print("-", chunk)
-
-print("\nAnswer:")
-print(answer)
+    if index is None:
+        index,embeddings = build_and_save_index(chunks)
+    
+    return index,chunks
