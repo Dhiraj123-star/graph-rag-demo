@@ -1,17 +1,16 @@
 import os
 import json
-import faiss
 import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import AsyncOpenAI
 from traditional_rag.rag import get_or_create_index
 
 # Load env
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(title="RAG Service API")
 
@@ -40,24 +39,24 @@ def health():
 
 # ---- Traditional RAG Endpoint -----
 @app.post("/traditional-rag")
-def traditional_rag(request:QueryRequest):
+async def traditional_rag(request:QueryRequest):
     query = request.query
 
     # Embed query
-    q_emb = client.embeddings.create(
+    q_emb = await client.embeddings.create(
         model="text-embedding-3-small",
         input=[query]
     )
 
     q_emb = np.array([q_emb.data[0].embedding],dtype="float32")
 
-    # Search
+    # FAISS Search (sync)
     _,indices = index.search(q_emb,3)
     retrieved_chunks = [chunks[i]for i in indices[0]]
     context = "\n\n".join(retrieved_chunks)
 
-    # LLM response
-    response = client.responses.create(
+    # LLM response (async)
+    response = await client.responses.create(
         model="gpt-4.1-mini",
         input = [
             {
@@ -83,7 +82,7 @@ def traditional_rag(request:QueryRequest):
 # ---- GRAPH RAG Endpoint --------
 
 @app.post("/graph-rag")
-def graph_rag(request:QueryRequest):
+async def graph_rag(request:QueryRequest):
     query=request.query
 
     # Entity extraction
@@ -129,7 +128,7 @@ def graph_rag(request:QueryRequest):
         context += f"- {edge['source']} {edge['relation']} {edge['target']}\n"
     
     # LLM response
-    response = client.responses.create(
+    response = await client.responses.create(
         model="gpt-4.1-mini",
         input = [
             {
@@ -154,11 +153,11 @@ def graph_rag(request:QueryRequest):
 
 # ------ Hybrid search RAG Endpoint------
 @app.post("/hybrid-rag")
-def hybrid_rag(request:QueryRequest):
+async def hybrid_rag(request:QueryRequest):
     query= request.query
 
     # ---- Vector RAG (FAISS) ---
-    q_emb = client.embeddings.create(
+    q_emb = await client.embeddings.create(
         model="text-embedding-3-small",
         input=[query]
     )
@@ -213,7 +212,7 @@ def hybrid_rag(request:QueryRequest):
     {graph_context}
 """
     # ----- LLM -----
-    response = client.responses.create(
+    response = await client.responses.create(
         model="gpt-4.1-mini",
         input = [
             {
