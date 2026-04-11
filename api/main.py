@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI
+from traditional_rag.rag import get_or_create_index
 
 # Load env
 load_dotenv()
@@ -14,6 +15,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(title="RAG Service API")
 
+index,chunks = get_or_create_index()
 # ------------------------
 # Request schema
 # ------------------------
@@ -26,26 +28,6 @@ class QueryRequest(BaseModel):
 # --------------------
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# ------- Traditional RAG ------------
-with open(os.path.join(BASE_DIR,"data","documents.txt"),"r") as f:
-    text =f.read()
-
-chunks = [line.strip() for line in text.split("\n") if line.strip()]
-
-# Create embeddings (once)
-embeddings_response = client.embeddings.create(
-    model="text-embedding-3-small",
-    input=chunks
-)
-
-embeddings = np.array(
-    [item.embedding for item in embeddings_response.data],
-    dtype="float32"
-)
-
-index = faiss.IndexFlatL2(embeddings.shape[1])
-index.add(embeddings)
 
 # ---- Graph RAG Setup --
 with open(os.path.join(BASE_DIR,"data","graph.json"),"r") as f:
@@ -214,13 +196,13 @@ def hybrid_rag(request:QueryRequest):
         if e["source"] in connected_entities or e["target"] in connected_entities 
     ]
     unique_edges = {
-        f"{e['source']}-{e['relation']}-e{['target']}":e
+        f"{e['source']}-{e['relation']}-{e['target']}":e
         for e in expanded_edges
     }.values()
 
     graph_context = "Graph Relationships:\n"
     for edge in unique_edges:
-        graph_context +=f"-{edge['source']} {edge['relation']} {edge['target']}\n"
+        graph_context +=f"- {edge['source']} {edge['relation']} {edge['target']}\n"
 
     # ---- MERGED CONTEXT -----
     final_context=f"""
