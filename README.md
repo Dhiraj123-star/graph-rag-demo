@@ -26,7 +26,7 @@ All systems use the same facts but different representations:
 * Retrieves using graph traversal (multi-hop reasoning)
 * Uses **OpenAI LLM for reasoning**
 
-### **Hybrid RAG (NEW)**
+### **Hybrid RAG**
 
 * Combines **vector search + graph relationships**
 * Uses text for context and graph for reasoning
@@ -38,7 +38,7 @@ All systems use the same facts but different representations:
 
 * **LLM**: OpenAI (`gpt-4.1-mini`)
 * **Embeddings**: OpenAI (`text-embedding-3-small`)
-* **Vector Search**: FAISS
+* **Vector Search**: FAISS (with persistence)
 * **Graph Storage**: JSON
 * **API Layer**: FastAPI
 * **Environment**: uv / venv
@@ -138,7 +138,7 @@ POST /graph-rag
 
 ---
 
-### 🔹 Hybrid RAG (NEW 🚀)
+### 🔹 Hybrid RAG 🚀
 
 ```
 POST /hybrid-rag
@@ -173,6 +173,8 @@ Graph relationships provide the reasoning path, while vector search provides sup
 
 * `data/documents.txt` — Text corpus
 * `data/graph.json` — Knowledge graph
+* `data/faiss.index` — Persisted FAISS index
+* `data/embeddings.npy` — Cached embeddings
 
 ---
 
@@ -184,18 +186,15 @@ Graph relationships provide the reasoning path, while vector search provides sup
 * ✅ Improved reasoning using **gpt-4.1-mini**
 * ✅ Added **FastAPI RAG service layer**
 * ✅ Introduced **Hybrid RAG (Graph + Vector)**
+* ✅ Implemented **FAISS index persistence (no recomputation)**
 * ✅ Clean, scalable architecture (API-ready)
 
 ---
 
 ## 🚀 Next Steps (Optional Enhancements)
 
-* Persist FAISS index (avoid recomputation)
-* Add **Redis caching**
 * Implement **async endpoints**
 * Add **Docker + CI/CD pipeline**
-* Improve entity extraction (NER / LLM-based)
-
 ---
 
 ## 💡 Summary
@@ -205,7 +204,7 @@ This project demonstrates how:
 * Traditional RAG is great for **semantic retrieval**
 * Graph RAG excels at **relationship-aware reasoning**
 * Hybrid RAG delivers **best of both worlds**
+* FAISS persistence improves **performance and scalability**
 * FastAPI enables **production-ready AI services**
 
 ---
-
