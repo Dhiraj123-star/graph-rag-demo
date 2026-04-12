@@ -40,7 +40,7 @@ All systems use the same facts but different representations:
 * **Embeddings**: OpenAI (`text-embedding-3-small`)
 * **Vector Search**: FAISS (with persistence)
 * **Graph Storage**: JSON
-* **API Layer**: FastAPI
+* **API Layer**: FastAPI (async-enabled)
 * **Environment**: uv / venv
 * **Config Management**: python-dotenv (.env)
 
@@ -50,7 +50,7 @@ All systems use the same facts but different representations:
 
 Create a `.env` file in the project root:
 
-```env
+```env id="env123"
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
@@ -62,20 +62,20 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 From the project root:
 
-```bash
+```bash id="setup1"
 cd graph-rag-bridgerton-demo
 ```
 
 Create and activate environment:
 
-```bash
+```bash id="setup2"
 uv venv
 source .venv/bin/activate
 ```
 
 Install dependencies:
 
-```bash
+```bash id="setup3"
 uv sync
 ```
 
@@ -85,7 +85,7 @@ uv sync
 
 ### **Run Scripts (Standalone)**
 
-```bash
+```bash id="run1"
 python traditional_rag/rag.py
 python graph_rag/graph_rag.py
 ```
@@ -94,7 +94,7 @@ python graph_rag/graph_rag.py
 
 ### **Run FastAPI Service**
 
-```bash
+```bash id="run2"
 uvicorn api.main:app --reload
 ```
 
@@ -116,7 +116,7 @@ GET /health
 POST /traditional-rag
 ```
 
-```json
+```json id="req1"
 {
   "query": "Who is the Lady in Silver?"
 }
@@ -130,7 +130,7 @@ POST /traditional-rag
 POST /graph-rag
 ```
 
-```json
+```json id="req2"
 {
   "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
 }
@@ -144,7 +144,7 @@ POST /graph-rag
 POST /hybrid-rag
 ```
 
-```json
+```json id="req3"
 {
   "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
 }
@@ -161,7 +161,7 @@ POST /hybrid-rag
 For this mystery, correct reasoning requires connecting entities:
 
 ```
-Sophie Baek → Lady in Silver
+Sophie Baek → Lady in Silver  
 Sophie Baek → Lord Penwood
 ```
 
@@ -185,6 +185,7 @@ Graph relationships provide the reasoning path, while vector search provides sup
 * ✅ Upgraded to **production-grade embeddings (text-embedding-3-small)**
 * ✅ Improved reasoning using **gpt-4.1-mini**
 * ✅ Added **FastAPI RAG service layer**
+* ✅ Enabled **async endpoints (non-blocking OpenAI calls)**
 * ✅ Introduced **Hybrid RAG (Graph + Vector)**
 * ✅ Implemented **FAISS index persistence (no recomputation)**
 * ✅ Clean, scalable architecture (API-ready)
@@ -193,8 +194,9 @@ Graph relationships provide the reasoning path, while vector search provides sup
 
 ## 🚀 Next Steps (Optional Enhancements)
 
-* Implement **async endpoints**
 * Add **Docker + CI/CD pipeline**
+* Add **Redis caching layer**
+
 ---
 
 ## 💡 Summary
@@ -205,6 +207,6 @@ This project demonstrates how:
 * Graph RAG excels at **relationship-aware reasoning**
 * Hybrid RAG delivers **best of both worlds**
 * FAISS persistence improves **performance and scalability**
-* FastAPI enables **production-ready AI services**
+* Async FastAPI enables **high-performance AI APIs**
 
 ---
