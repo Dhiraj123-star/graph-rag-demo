@@ -41,6 +41,7 @@ All systems use the same facts but different representations:
 * **Vector Search**: FAISS (with persistence)
 * **Graph Storage**: JSON
 * **API Layer**: FastAPI (async-enabled)
+* **Containerization**: Docker + Docker Compose
 * **Environment**: uv / venv
 * **Config Management**: python-dotenv (.env)
 
@@ -58,7 +59,7 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Setup (Local Development)
 
 From the project root:
 
@@ -96,6 +97,32 @@ python graph_rag/graph_rag.py
 
 ```bash id="run2"
 uvicorn api.main:app --reload
+```
+
+---
+
+## 🐳 Run with Docker (Recommended)
+
+### Build & Start
+
+```bash id="docker1"
+docker-compose up --build
+```
+
+---
+
+### Stop Containers
+
+```bash id="docker2"
+docker-compose down
+```
+
+---
+
+### API Docs
+
+```bash id="docker3"
+http://localhost:8000/docs
 ```
 
 ---
@@ -176,6 +203,8 @@ Graph relationships provide the reasoning path, while vector search provides sup
 * `data/faiss.index` — Persisted FAISS index
 * `data/embeddings.npy` — Cached embeddings
 
+> 📌 FAISS index and embeddings are automatically persisted using Docker volumes.
+
 ---
 
 ## ⚡ Improvements Over Previous Version
@@ -188,14 +217,14 @@ Graph relationships provide the reasoning path, while vector search provides sup
 * ✅ Enabled **async endpoints (non-blocking OpenAI calls)**
 * ✅ Introduced **Hybrid RAG (Graph + Vector)**
 * ✅ Implemented **FAISS index persistence (no recomputation)**
+* ✅ Dockerized application with **Docker Compose support**
 * ✅ Clean, scalable architecture (API-ready)
 
 ---
 
 ## 🚀 Next Steps (Optional Enhancements)
 
-* Add **Docker + CI/CD pipeline**
-* Add **Redis caching layer**
+* Add **CI/CD pipeline (GitHub Actions)**
 
 ---
 
@@ -208,5 +237,6 @@ This project demonstrates how:
 * Hybrid RAG delivers **best of both worlds**
 * FAISS persistence improves **performance and scalability**
 * Async FastAPI enables **high-performance AI APIs**
+* Docker enables **portable and production-ready deployment**
 
 ---
