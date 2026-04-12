@@ -13,9 +13,11 @@ if not api_key:
 
 client = OpenAI(api_key=api_key)
 
-INDEX_PATH = "data/faiss.index"
-EMBEDDINGS_PATH =  "data/embeddings.npy"
-DOC_PATH = "data/documents.txt"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+INDEX_PATH = os.path.join(BASE_DIR,"data","faiss.index")
+EMBEDDINGS_PATH =  os.path.join(BASE_DIR,"data","embeddings.npy")
+DOC_PATH = os.path.join(BASE_DIR,"data","documents.txt")
 
 # 2. Load documents
 def load_documents():
