@@ -25,3 +25,6 @@ Thumbs.db
 # FAISS index files
 *.index
 *.npy
+
+# nginx certs files
+*.pem
