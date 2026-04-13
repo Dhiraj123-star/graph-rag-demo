@@ -2,12 +2,21 @@ services:
   rag_api:
     build: .
     container_name: rag-api
-    ports:
-      - "8000:8000"
     env_file:
       - .env
-    
     volumes:
       - ./data:/app/data  # persists FAISS + embeddings
-    
+    expose:
+      - "8000"
 
+  nginx:
+    image: nginx:latest
+    container_name: rag-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+    depends_on:
+      - rag_api
+    
