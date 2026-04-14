@@ -1,7 +1,13 @@
 import os
 import json
 import numpy as np
-from fastapi import FastAPI
+import redis
+import hashlib
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI,Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
@@ -13,6 +19,23 @@ load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(title="RAG Service API")
+
+# Redis setup
+redis_client = redis.Redis(host="redis",port=6379,decode_responses=True)
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_handler(request,exc):
+    return JSONResponse(
+        status_code=429,
+        content={"error":"Rate limit exceeded"}
+    )
+
+def generate_cache_key(prefix:str,query:str):
+    return f"{prefix}:{hashlib.md5(query.encode()).hexdigest()}"
 
 index,chunks = get_or_create_index()
 # ------------------------
@@ -39,9 +62,17 @@ def health():
 
 # ---- Traditional RAG Endpoint -----
 @app.post("/traditional-rag")
-async def traditional_rag(request:QueryRequest):
-    query = request.query
+@limiter.limit("5/minute")
+async def traditional_rag(request:Request,body:QueryRequest):
+    query = body.query
+    cache_key = generate_cache_key("trad",query)
+    
+    # Check cache
+    cached = redis_client.get(cache_key)
 
+    if cached:
+        return json.loads(cached)
+    
     # Embed query
     q_emb = await client.embeddings.create(
         model="text-embedding-3-small",
@@ -73,18 +104,29 @@ async def traditional_rag(request:QueryRequest):
     )
     answer= response.output[0].content[0].text
 
-    return {
+    result = {
         "query":query,
         "retrieved_chunks":retrieved_chunks,
         "answer":answer
     }
 
+    # Store in cache(TTL= 5 min)
+    redis_client.setex(cache_key,300,json.dumps(result))
+    return result
+
 # ---- GRAPH RAG Endpoint --------
 
 @app.post("/graph-rag")
-async def graph_rag(request:QueryRequest):
-    query=request.query
+@limiter.limit("5/minute")
+async def graph_rag(request: Request,body:QueryRequest):
+    query=body.query
 
+    cache_key = generate_cache_key("graph",query)
+    cached = redis_client.get(cache_key)
+
+    if cached:
+        return json.loads(cached)
+    
     # Entity extraction
     extracted_entities = [
         node["id"]
@@ -144,17 +186,26 @@ async def graph_rag(request:QueryRequest):
     )
     answer = response.output[0].content[0].text
 
-    return {
+    result = {
         "query":query,
         "entities":extracted_entities,
         "relationships":list(unique_edges),
         "answer":answer
     }
+    redis_client.setex(cache_key,300,json.dumps(result))
+    return result
 
 # ------ Hybrid search RAG Endpoint------
 @app.post("/hybrid-rag")
-async def hybrid_rag(request:QueryRequest):
-    query= request.query
+@limiter.limit("5/minute")
+async def hybrid_rag(request: Request,body:QueryRequest):
+    query= body.query
+
+    cache_key = generate_cache_key("hybrid",query)
+    cached = redis_client.get(cache_key)
+
+    if cached:
+        return json.loads(cached)
 
     # ---- Vector RAG (FAISS) ---
     q_emb = await client.embeddings.create(
@@ -233,9 +284,12 @@ async def hybrid_rag(request:QueryRequest):
     )
     answer = response.output[0].content[0].text
 
-    return {
+    result= {
         "query": query,
         "vector_chunks": retrieved_chunks,
         "graph_relationships": list(unique_edges),
         "answer": answer
     }
+
+    redis_client.setex(cache_key,300,json.dumps(result))
+    return result
