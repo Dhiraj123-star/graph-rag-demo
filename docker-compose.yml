@@ -8,6 +8,8 @@ services:
       - ./data:/app/data  # persists FAISS + embeddings
     expose:
       - "8000"
+    depends_on:
+      - redis
 
   nginx:
     image: nginx:latest
@@ -21,4 +23,9 @@ services:
 
     depends_on:
       - rag_api
-    
+  
+  redis: 
+    image: redis:7-alpine
+    container_name: rag-redis
+    ports:
+      - "6380:6379"
