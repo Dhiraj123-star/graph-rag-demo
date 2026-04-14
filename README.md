@@ -1,6 +1,6 @@
 # Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**.
+Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**, now with **NGINX reverse proxy and HTTPS support**.
 
 ---
 
@@ -41,6 +41,8 @@ All systems use the same facts but different representations:
 * **Vector Search**: FAISS (with persistence)
 * **Graph Storage**: JSON
 * **API Layer**: FastAPI (async-enabled)
+* **Reverse Proxy**: NGINX
+* **Security**: HTTPS (self-signed SSL)
 * **Containerization**: Docker + Docker Compose
 * **Environment**: uv / venv
 * **Config Management**: python-dotenv (.env)
@@ -61,20 +63,14 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ## ⚙️ Setup (Local Development)
 
-From the project root:
-
 ```bash id="setup1"
 cd graph-rag-bridgerton-demo
 ```
-
-Create and activate environment:
 
 ```bash id="setup2"
 uv venv
 source .venv/bin/activate
 ```
-
-Install dependencies:
 
 ```bash id="setup3"
 uv sync
@@ -101,9 +97,22 @@ uvicorn api.main:app --reload
 
 ---
 
-## 🐳 Run with Docker (Recommended)
+## 🐳 Run with Docker + NGINX + HTTPS (Recommended)
 
-### Build & Start
+### 🔐 Step 1: Generate SSL Certificate
+
+```bash id="ssl1"
+mkdir -p nginx/ssl
+
+openssl req -x509 -nodes -days 365 \
+-newkey rsa:2048 \
+-keyout nginx/ssl/key.pem \
+-out nginx/ssl/cert.pem
+```
+
+---
+
+### 🚀 Step 2: Build & Run
 
 ```bash id="docker1"
 docker-compose up --build
@@ -111,7 +120,7 @@ docker-compose up --build
 
 ---
 
-### Stop Containers
+### 🛑 Stop
 
 ```bash id="docker2"
 docker-compose down
@@ -119,11 +128,21 @@ docker-compose down
 
 ---
 
-### API Docs
+## 🌐 Access Application
 
-```bash id="docker3"
-http://localhost:8000/docs
+### 🔒 HTTPS (Primary)
+
+```bash id="url1"
+https://localhost/docs
 ```
+
+### 🔁 HTTP (Auto Redirect)
+
+```bash id="url2"
+http://localhost → redirects to HTTPS
+```
+
+> ⚠️ Browser will show a warning for self-signed certificates → click **Advanced → Proceed**
 
 ---
 
@@ -185,14 +204,12 @@ POST /hybrid-rag
 * Graph RAG retrieves **structured relationships (multi-hop reasoning)**
 * Hybrid RAG combines both for **better accuracy and reasoning**
 
-For this mystery, correct reasoning requires connecting entities:
-
 ```
 Sophie Baek → Lady in Silver  
 Sophie Baek → Lord Penwood
 ```
 
-Graph relationships provide the reasoning path, while vector search provides supporting context.
+Graph relationships provide reasoning, vector search provides supporting context.
 
 ---
 
@@ -203,7 +220,7 @@ Graph relationships provide the reasoning path, while vector search provides sup
 * `data/faiss.index` — Persisted FAISS index
 * `data/embeddings.npy` — Cached embeddings
 
-> 📌 FAISS index and embeddings are automatically persisted using Docker volumes.
+> 📌 Persisted using Docker volumes
 
 ---
 
@@ -211,32 +228,35 @@ Graph relationships provide the reasoning path, while vector search provides sup
 
 * ✅ Replaced Ollama with **OpenAI APIs**
 * ✅ Added **secure API key management using .env**
-* ✅ Upgraded to **production-grade embeddings (text-embedding-3-small)**
-* ✅ Improved reasoning using **gpt-4.1-mini**
-* ✅ Added **FastAPI RAG service layer**
-* ✅ Enabled **async endpoints (non-blocking OpenAI calls)**
-* ✅ Introduced **Hybrid RAG (Graph + Vector)**
-* ✅ Implemented **FAISS index persistence (no recomputation)**
-* ✅ Dockerized application with **Docker Compose support**
-* ✅ Clean, scalable architecture (API-ready)
+* ✅ Upgraded embeddings (`text-embedding-3-small`)
+* ✅ Improved reasoning (`gpt-4.1-mini`)
+* ✅ FastAPI async API layer
+* ✅ Hybrid RAG (Graph + Vector)
+* ✅ FAISS persistence
+* ✅ Dockerized with Compose
+* ✅ Added **NGINX reverse proxy**
+* ✅ Enabled **HTTPS with self-signed SSL**
 
 ---
 
 ## 🚀 Next Steps (Optional Enhancements)
 
 * Add **CI/CD pipeline (GitHub Actions)**
+* Replace self-signed SSL with **Let's Encrypt (production)**
+* Deploy on **AWS / Kubernetes**
+* Add **rate limiting + caching (Redis)**
 
 ---
 
 ## 💡 Summary
 
-This project demonstrates how:
+This project demonstrates:
 
-* Traditional RAG is great for **semantic retrieval**
-* Graph RAG excels at **relationship-aware reasoning**
-* Hybrid RAG delivers **best of both worlds**
-* FAISS persistence improves **performance and scalability**
-* Async FastAPI enables **high-performance AI APIs**
-* Docker enables **portable and production-ready deployment**
+* Semantic retrieval (**Traditional RAG**)
+* Relationship reasoning (**Graph RAG**)
+* Combined intelligence (**Hybrid RAG**)
+* Scalable backend (**FastAPI + Async**)
+* Persistent vector storage (**FAISS**)
+* Production-ready deployment (**Docker + NGINX + HTTPS**)
 
 ---
