@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-RUN pip install -no-cache-dir --user -r requirements.txt 
+RUN pip install --no-cache-dir  -r requirements.txt 
 
 # ---- Stage 2: Runtime ------
 FROM python:3.13-slim
@@ -17,10 +17,8 @@ FROM python:3.13-slim
 WORKDIR /app
 
 # Copy only installed packages (NOT build tools)
-COPY --from=builder /root/.local/ /root/.local
+COPY --from=builder /usr/local /usr/local
 
-# Add to PATH
-ENV PATH=/root/.local/bin:$PATH
 
 COPY . .
 
