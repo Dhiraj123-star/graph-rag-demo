@@ -1,6 +1,6 @@
 # Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**, now with **NGINX reverse proxy and HTTPS support**.
+Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**, now enhanced with **NGINX, HTTPS, Redis caching, and rate limiting**.
 
 ---
 
@@ -43,6 +43,8 @@ All systems use the same facts but different representations:
 * **API Layer**: FastAPI (async-enabled)
 * **Reverse Proxy**: NGINX
 * **Security**: HTTPS (self-signed SSL)
+* **Caching Layer**: Redis
+* **Rate Limiting**: SlowAPI
 * **Containerization**: Docker + Docker Compose
 * **Environment**: uv / venv
 * **Config Management**: python-dotenv (.env)
@@ -53,7 +55,7 @@ All systems use the same facts but different representations:
 
 Create a `.env` file in the project root:
 
-```env id="env123"
+```env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
@@ -63,16 +65,16 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ## ⚙️ Setup (Local Development)
 
-```bash id="setup1"
+```bash
 cd graph-rag-bridgerton-demo
 ```
 
-```bash id="setup2"
+```bash
 uv venv
 source .venv/bin/activate
 ```
 
-```bash id="setup3"
+```bash
 uv sync
 ```
 
@@ -82,7 +84,7 @@ uv sync
 
 ### **Run Scripts (Standalone)**
 
-```bash id="run1"
+```bash
 python traditional_rag/rag.py
 python graph_rag/graph_rag.py
 ```
@@ -91,7 +93,7 @@ python graph_rag/graph_rag.py
 
 ### **Run FastAPI Service**
 
-```bash id="run2"
+```bash
 uvicorn api.main:app --reload
 ```
 
@@ -101,7 +103,7 @@ uvicorn api.main:app --reload
 
 ### 🔐 Step 1: Generate SSL Certificate
 
-```bash id="ssl1"
+```bash
 mkdir -p nginx/ssl
 
 openssl req -x509 -nodes -days 365 \
@@ -112,17 +114,17 @@ openssl req -x509 -nodes -days 365 \
 
 ---
 
-### 🚀 Step 2: Build & Run
+### 🚀 Step 2: Start Services
 
-```bash id="docker1"
+```bash
 docker-compose up --build
 ```
 
 ---
 
-### 🛑 Stop
+### 🛑 Stop Services
 
-```bash id="docker2"
+```bash
 docker-compose down
 ```
 
@@ -132,17 +134,17 @@ docker-compose down
 
 ### 🔒 HTTPS (Primary)
 
-```bash id="url1"
+```bash
 https://localhost/docs
 ```
 
 ### 🔁 HTTP (Auto Redirect)
 
-```bash id="url2"
+```bash
 http://localhost → redirects to HTTPS
 ```
 
-> ⚠️ Browser will show a warning for self-signed certificates → click **Advanced → Proceed**
+> ⚠️ Browser warning for self-signed SSL is expected
 
 ---
 
@@ -162,7 +164,7 @@ GET /health
 POST /traditional-rag
 ```
 
-```json id="req1"
+```json
 {
   "query": "Who is the Lady in Silver?"
 }
@@ -176,7 +178,7 @@ POST /traditional-rag
 POST /graph-rag
 ```
 
-```json id="req2"
+```json
 {
   "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
 }
@@ -190,9 +192,32 @@ POST /graph-rag
 POST /hybrid-rag
 ```
 
-```json id="req3"
+```json
 {
   "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
+}
+```
+
+---
+
+## ⚡ Performance & Protection Enhancements
+
+### 🚀 Redis Caching
+
+* Caches responses for repeated queries (TTL: 5 minutes)
+* Reduces OpenAI API calls
+* Improves response time significantly
+
+### 🚫 Rate Limiting
+
+* Limit: **5 requests/minute per IP**
+* Prevents abuse and API overuse
+
+Example response when exceeded:
+
+```json
+{
+  "error": "Rate limit exceeded"
 }
 ```
 
@@ -209,7 +234,7 @@ Sophie Baek → Lady in Silver
 Sophie Baek → Lord Penwood
 ```
 
-Graph relationships provide reasoning, vector search provides supporting context.
+Graph provides reasoning, vector provides context.
 
 ---
 
@@ -227,25 +252,23 @@ Graph relationships provide reasoning, vector search provides supporting context
 ## ⚡ Improvements Over Previous Version
 
 * ✅ Replaced Ollama with **OpenAI APIs**
-* ✅ Added **secure API key management using .env**
+* ✅ Added **.env-based secure API key management**
 * ✅ Upgraded embeddings (`text-embedding-3-small`)
 * ✅ Improved reasoning (`gpt-4.1-mini`)
-* ✅ FastAPI async API layer
+* ✅ Async FastAPI endpoints
 * ✅ Hybrid RAG (Graph + Vector)
-* ✅ FAISS persistence
+* ✅ FAISS persistence (no recomputation)
 * ✅ Dockerized with Compose
-* ✅ Added **NGINX reverse proxy**
-* ✅ Enabled **HTTPS with self-signed SSL**
+* ✅ NGINX reverse proxy
+* ✅ HTTPS (self-signed SSL)
+* ✅ Redis caching layer
+* ✅ Rate limiting (SlowAPI)
 
 ---
 
 ## 🚀 Next Steps (Optional Enhancements)
 
 * Add **CI/CD pipeline (GitHub Actions)**
-* Replace self-signed SSL with **Let's Encrypt (production)**
-* Deploy on **AWS / Kubernetes**
-* Add **rate limiting + caching (Redis)**
-
 ---
 
 ## 💡 Summary
@@ -255,8 +278,9 @@ This project demonstrates:
 * Semantic retrieval (**Traditional RAG**)
 * Relationship reasoning (**Graph RAG**)
 * Combined intelligence (**Hybrid RAG**)
-* Scalable backend (**FastAPI + Async**)
-* Persistent vector storage (**FAISS**)
-* Production-ready deployment (**Docker + NGINX + HTTPS**)
+* High-performance APIs (**Async FastAPI**)
+* Optimized responses (**Redis caching**)
+* API protection (**Rate limiting**)
+* Scalable deployment (**Docker + NGINX + HTTPS**)
 
 ---
