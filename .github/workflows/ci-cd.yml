@@ -21,5 +21,5 @@ jobs:
       
       - name: Build & Push API Image
         run: |
-          docker build -t dhiraj918106/rag-api:latest
+          docker build -t dhiraj918106/rag-api:latest .
           docker push dhiraj918106/rag-api:latest
