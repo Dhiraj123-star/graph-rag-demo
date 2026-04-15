@@ -20,6 +20,10 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
       
       - name: Build & Push API Image
-        run: |
-          docker build -t dhiraj918106/rag-api:latest .
-          docker push dhiraj918106/rag-api:latest
+        uses: docker/build-push-action@v5
+        with: 
+          context: .
+          push: true
+          tags: dhiraj918106/rag-api:latest
+          cache-from: type=registry,ref=dhiraj918106/rag-api:latest
+          cache-to: type=inline

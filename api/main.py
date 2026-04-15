@@ -58,7 +58,7 @@ with open(os.path.join(BASE_DIR,"data","graph.json"),"r") as f:
 # ----- Health Check -----
 @app.get("/health")
 def health():
-    return {"status":"OK"}
+    return {"status":"RAG Service API is Running!!"}
 
 # ---- Traditional RAG Endpoint -----
 @app.post("/traditional-rag")
