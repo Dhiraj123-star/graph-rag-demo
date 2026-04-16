@@ -1,6 +1,6 @@
-# Graph RAG vs Traditional RAG Demo
+# 🚀 Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton "Lady in Silver" mystery — powered by **OpenAI APIs** and exposed via a **FastAPI service**, now enhanced with **NGINX, HTTPS, Redis caching, and rate limiting**.
+Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton *"Lady in Silver"* mystery — powered by **OpenAI APIs** and deployed as a **production-ready FastAPI service** with **NGINX, HTTPS, Redis, Rate Limiting, and CI/CD**.
 
 ---
 
@@ -14,23 +14,23 @@ Who is the Lady in Silver and how is she connected to Lord Penwood?
 
 All systems use the same facts but different representations:
 
-### **Traditional RAG**
+### 🔹 Traditional RAG
 
 * Stores text chunks
 * Retrieves using vector similarity (FAISS)
-* Uses **OpenAI embeddings** for semantic search
+* Uses OpenAI embeddings
 
-### **Graph RAG**
+### 🔹 Graph RAG
 
-* Stores entities and relationships
-* Retrieves using graph traversal (multi-hop reasoning)
-* Uses **OpenAI LLM for reasoning**
+* Stores entities & relationships
+* Uses multi-hop reasoning
+* Better for structured understanding
 
-### **Hybrid RAG**
+### 🔹 Hybrid RAG
 
-* Combines **vector search + graph relationships**
-* Uses text for context and graph for reasoning
-* Provides **more accurate and explainable answers**
+* Combines vector + graph
+* Uses **text for context + graph for reasoning**
+* Most accurate & explainable
 
 ---
 
@@ -38,60 +38,39 @@ All systems use the same facts but different representations:
 
 * **LLM**: OpenAI (`gpt-4.1-mini`)
 * **Embeddings**: OpenAI (`text-embedding-3-small`)
-* **Vector Search**: FAISS (with persistence)
+* **Vector DB**: FAISS (persistent)
 * **Graph Storage**: JSON
-* **API Layer**: FastAPI (async-enabled)
+* **API Layer**: FastAPI (async)
 * **Reverse Proxy**: NGINX
 * **Security**: HTTPS (self-signed SSL)
-* **Caching Layer**: Redis
+* **Caching**: Redis
 * **Rate Limiting**: SlowAPI
 * **Containerization**: Docker + Docker Compose
-* **Environment**: uv / venv
-* **Config Management**: python-dotenv (.env)
+* **CI/CD**: GitHub Actions → DockerHub
+* **Config**: python-dotenv
 
 ---
 
 ## 🔐 Environment Setup
 
-Create a `.env` file in the project root:
-
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-> ⚠️ Make sure `.env` is added to `.gitignore`
-
 ---
 
-## ⚙️ Setup (Local Development)
+## ⚙️ Local Setup
 
 ```bash
 cd graph-rag-bridgerton-demo
-```
-
-```bash
 uv venv
 source .venv/bin/activate
-```
-
-```bash
 uv sync
 ```
 
 ---
 
-## ▶️ Run
-
-### **Run Scripts (Standalone)**
-
-```bash
-python traditional_rag/rag.py
-python graph_rag/graph_rag.py
-```
-
----
-
-### **Run FastAPI Service**
+## ▶️ Run Locally
 
 ```bash
 uvicorn api.main:app --reload
@@ -99,9 +78,9 @@ uvicorn api.main:app --reload
 
 ---
 
-## 🐳 Run with Docker + NGINX + HTTPS (Recommended)
+## 🐳 Run with Docker + NGINX + HTTPS
 
-### 🔐 Step 1: Generate SSL Certificate
+### 🔐 Generate SSL
 
 ```bash
 mkdir -p nginx/ssl
@@ -114,7 +93,7 @@ openssl req -x509 -nodes -days 365 \
 
 ---
 
-### 🚀 Step 2: Start Services
+### 🚀 Start Services
 
 ```bash
 docker-compose up --build
@@ -122,41 +101,20 @@ docker-compose up --build
 
 ---
 
-### 🛑 Stop Services
+### 🌐 Access
 
-```bash
-docker-compose down
-```
-
----
-
-## 🌐 Access Application
-
-### 🔒 HTTPS (Primary)
-
-```bash
-https://localhost/docs
-```
-
-### 🔁 HTTP (Auto Redirect)
-
-```bash
-http://localhost → redirects to HTTPS
-```
-
-> ⚠️ Browser warning for self-signed SSL is expected
+* 🔒 [https://localhost/docs](https://localhost/docs)
+* 🔁 [http://localhost](http://localhost) → auto redirects
 
 ---
 
 ## 🔌 API Endpoints
 
-### ✅ Health Check
+### ✅ Health
 
 ```
 GET /health
 ```
-
----
 
 ### 🔹 Traditional RAG
 
@@ -164,27 +122,11 @@ GET /health
 POST /traditional-rag
 ```
 
-```json
-{
-  "query": "Who is the Lady in Silver?"
-}
-```
-
----
-
 ### 🔹 Graph RAG
 
 ```
 POST /graph-rag
 ```
-
-```json
-{
-  "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
-}
-```
-
----
 
 ### 🔹 Hybrid RAG 🚀
 
@@ -192,95 +134,90 @@ POST /graph-rag
 POST /hybrid-rag
 ```
 
-```json
-{
-  "query": "Who is the Lady in Silver and how is she connected to Lord Penwood?"
-}
-```
-
 ---
 
-## ⚡ Performance & Protection Enhancements
+## ⚡ Performance & Protection
 
 ### 🚀 Redis Caching
 
-* Caches responses for repeated queries (TTL: 5 minutes)
-* Reduces OpenAI API calls
-* Improves response time significantly
+* TTL: 5 minutes
+* Reduces OpenAI calls
+* Faster responses
 
 ### 🚫 Rate Limiting
 
-* Limit: **5 requests/minute per IP**
-* Prevents abuse and API overuse
-
-Example response when exceeded:
-
-```json
-{
-  "error": "Rate limit exceeded"
-}
-```
+* 5 requests/min/IP
+* Prevents abuse
 
 ---
 
 ## 🧠 Key Insight
-
-* Traditional RAG retrieves **similar text chunks**
-* Graph RAG retrieves **structured relationships (multi-hop reasoning)**
-* Hybrid RAG combines both for **better accuracy and reasoning**
 
 ```
 Sophie Baek → Lady in Silver  
 Sophie Baek → Lord Penwood
 ```
 
-Graph provides reasoning, vector provides context.
+* Graph → reasoning
+* Vector → supporting context
+* Hybrid → best results
 
 ---
 
 ## 📂 Data
 
-* `data/documents.txt` — Text corpus
-* `data/graph.json` — Knowledge graph
-* `data/faiss.index` — Persisted FAISS index
-* `data/embeddings.npy` — Cached embeddings
+* `data/documents.txt`
+* `data/graph.json`
+* `data/faiss.index`
+* `data/embeddings.npy`
 
-> 📌 Persisted using Docker volumes
+📌 Persisted via Docker volumes
 
 ---
 
-## ⚡ Improvements Over Previous Version
+## ⚡ Production Improvements
 
-* ✅ Replaced Ollama with **OpenAI APIs**
-* ✅ Added **.env-based secure API key management**
-* ✅ Upgraded embeddings (`text-embedding-3-small`)
-* ✅ Improved reasoning (`gpt-4.1-mini`)
+* ✅ OpenAI APIs (LLM + embeddings)
 * ✅ Async FastAPI endpoints
 * ✅ Hybrid RAG (Graph + Vector)
-* ✅ FAISS persistence (no recomputation)
-* ✅ Dockerized with Compose
+* ✅ FAISS persistence
+* ✅ Redis caching
+* ✅ Rate limiting
+* ✅ Dockerized (~59MB optimized image)
 * ✅ NGINX reverse proxy
 * ✅ HTTPS (self-signed SSL)
-* ✅ Redis caching layer
-* ✅ Rate limiting (SlowAPI)
+* ✅ CI/CD with GitHub Actions
+* ✅ Auto push to DockerHub
 
 ---
 
-## 🚀 Next Steps (Optional Enhancements)
+## 🔄 CI/CD Pipeline
 
-* Add **CI/CD pipeline (GitHub Actions)**
+On every push to `main`:
+
+* Build Docker image
+* Push to DockerHub (`dhiraj918106/rag-api`)
+* Ready for deployment
+
+---
+
+## 🚀 Next Steps
+
+* Use **Let's Encrypt SSL (production)**
+* Deploy on **AWS / Kubernetes**
+* Add **observability (Prometheus + Grafana)**
+
 ---
 
 ## 💡 Summary
 
 This project demonstrates:
 
-* Semantic retrieval (**Traditional RAG**)
-* Relationship reasoning (**Graph RAG**)
-* Combined intelligence (**Hybrid RAG**)
-* High-performance APIs (**Async FastAPI**)
-* Optimized responses (**Redis caching**)
-* API protection (**Rate limiting**)
-* Scalable deployment (**Docker + NGINX + HTTPS**)
+* Semantic search → **Traditional RAG**
+* Relationship reasoning → **Graph RAG**
+* Combined intelligence → **Hybrid RAG**
+* High performance → **Async FastAPI + Redis**
+* Secure deployment → **NGINX + HTTPS**
+* DevOps maturity → **Docker + CI/CD**
 
 ---
