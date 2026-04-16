@@ -1,15 +1,17 @@
 services:
   rag_api:
-    build: .
+    image: dhiraj918106/rag-api:latest
+    pull_policy: always
     container_name: rag-api
     env_file:
       - .env
     volumes:
-      - ./data:/app/data  # persists FAISS + embeddings
+      - ./data:/app/data
     expose:
       - "8000"
     depends_on:
       - redis
+    
 
   nginx:
     image: nginx:latest
