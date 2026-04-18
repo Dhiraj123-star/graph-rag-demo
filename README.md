@@ -1,6 +1,6 @@
 # 🚀 Graph RAG vs Traditional RAG Demo
 
-Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton *"Lady in Silver"* mystery — powered by **OpenAI APIs** and deployed as a **production-ready FastAPI service** with **NGINX, HTTPS, Redis, Rate Limiting, and CI/CD**.
+Minimal comparison of **Traditional RAG**, **Graph RAG**, and **Hybrid RAG** using the Bridgerton *"Lady in Silver"* mystery — powered by **OpenAI APIs** and deployed as a **production-ready FastAPI service** with **NGINX, HTTPS, Redis, Rate Limiting, CI/CD, and Kubernetes support**.
 
 ---
 
@@ -46,6 +46,7 @@ All systems use the same facts but different representations:
 * **Caching**: Redis
 * **Rate Limiting**: SlowAPI
 * **Containerization**: Docker + Docker Compose
+* **Orchestration**: Kubernetes (Minikube)
 * **CI/CD**: GitHub Actions → DockerHub
 * **Config**: python-dotenv
 
@@ -56,6 +57,8 @@ All systems use the same facts but different representations:
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 ```
+
+> ⚠️ Do NOT commit `.env` to GitHub
 
 ---
 
@@ -108,6 +111,40 @@ docker-compose up --build
 
 ---
 
+## ☸️ Run with Kubernetes (Minikube)
+
+### Start cluster
+
+```bash
+minikube start
+```
+
+---
+
+### Create secret from `.env`
+
+```bash
+kubectl create secret generic rag-secret --from-env-file=.env
+```
+
+---
+
+### Deploy application
+
+```bash
+kubectl apply -f k8s/
+```
+
+---
+
+### Access service
+
+```bash
+minikube service rag-api-service
+```
+
+---
+
 ## 🔌 API Endpoints
 
 ### ✅ Health
@@ -142,7 +179,7 @@ POST /hybrid-rag
 
 * TTL: 5 minutes
 * Reduces OpenAI calls
-* Faster responses
+* Improves response time
 
 ### 🚫 Rate Limiting
 
@@ -171,7 +208,7 @@ Sophie Baek → Lord Penwood
 * `data/faiss.index`
 * `data/embeddings.npy`
 
-📌 Persisted via Docker volumes
+📌 Persisted via Docker volumes / Kubernetes volumes
 
 ---
 
@@ -183,9 +220,10 @@ Sophie Baek → Lord Penwood
 * ✅ FAISS persistence
 * ✅ Redis caching
 * ✅ Rate limiting
-* ✅ Dockerized (~59MB optimized image)
+* ✅ Optimized Docker image (~59MB)
 * ✅ NGINX reverse proxy
 * ✅ HTTPS (self-signed SSL)
+* ✅ Kubernetes-ready deployment
 * ✅ CI/CD with GitHub Actions
 * ✅ Auto push to DockerHub
 
@@ -201,23 +239,16 @@ On every push to `main`:
 
 ---
 
-## 🚀 Next Steps
-
-* Use **Let's Encrypt SSL (production)**
-* Deploy on **AWS / Kubernetes**
-* Add **observability (Prometheus + Grafana)**
-
----
-
 ## 💡 Summary
 
 This project demonstrates:
 
-* Semantic search → **Traditional RAG**
+* Semantic retrieval → **Traditional RAG**
 * Relationship reasoning → **Graph RAG**
 * Combined intelligence → **Hybrid RAG**
 * High performance → **Async FastAPI + Redis**
 * Secure deployment → **NGINX + HTTPS**
-* DevOps maturity → **Docker + CI/CD**
+* Scalable infra → **Docker + Kubernetes**
+* DevOps maturity → **CI/CD pipeline**
 
 ---
